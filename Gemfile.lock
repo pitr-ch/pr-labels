@@ -1,0 +1,62 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    addressable (2.3.4)
+    coderay (1.0.9)
+    excon (0.22.1)
+    faraday (0.8.7)
+      multipart-post (~> 1.1)
+    github_api (0.10.1)
+      addressable
+      faraday (~> 0.8.1)
+      hashie (>= 1.2)
+      multi_json (~> 1.4)
+      nokogiri (~> 1.5.2)
+      oauth2
+    hashie (2.0.5)
+    heroku (2.39.3)
+      heroku-api (~> 0.3.7)
+      launchy (>= 0.3.2)
+      netrc (~> 0.7.7)
+      rest-client (~> 1.6.1)
+      rubyzip
+    heroku-api (0.3.11)
+      excon (~> 0.22.1)
+    httpauth (0.2.0)
+    json (1.7.7)
+    jwt (0.1.8)
+      multi_json (>= 1.5)
+    launchy (2.3.0)
+      addressable (~> 2.3)
+    method_source (0.8.1)
+    mime-types (1.23)
+    multi_json (1.7.3)
+    multi_xml (0.5.3)
+    multipart-post (1.2.0)
+    netrc (0.7.7)
+    nokogiri (1.5.9)
+    oauth2 (0.9.1)
+      faraday (~> 0.8)
+      httpauth (~> 0.1)
+      jwt (~> 0.1.4)
+      multi_json (~> 1.0)
+      multi_xml (~> 0.5)
+      rack (~> 1.2)
+    pry (0.9.12.2)
+      coderay (~> 1.0.5)
+      method_source (~> 0.8)
+      slop (~> 3.4)
+    rack (1.5.2)
+    rest-client (1.6.7)
+      mime-types (>= 1.16)
+    rubyzip (0.9.9)
+    slop (3.4.5)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  github_api
+  heroku
+  json (~> 1.7.7)
+  pry
