@@ -41,10 +41,12 @@ class PRLabels
   private
 
   def check_labels(pull_request)
-    comments = github.pull_requests.comments.list(owner, repo, request_id: pull_request.number)
+    pr_comments    = github.pull_requests.comments.list(owner, repo, request_id: pull_request.number)
+    issue_comments = github.issues.comments.list(owner, repo, issue_id: pull_request.number)
 
     should_have_labels = [pr_label.name] + ack_labels.map do |label|
-      label.name if comments.any? { |comment| comment.body =~ label.regexp }
+      test = -> comment { comment.body =~ label.regexp }
+      label.name if pr_comments.any?(&test) || issue_comments.any?(&test)
     end.compact
 
     current_labels = pull_request.labels.map &:name
