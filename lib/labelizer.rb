@@ -4,12 +4,14 @@ require 'bundler/setup'
 require 'github_api'
 require 'github_api/pull_requests'
 require 'pry'
+require 'algebrick'
 require 'pp'
 
 
 class PRLabels
-  class Label < Struct.new(:name, :color, :regexp)
-  end
+  Condition = Algebrick::Variant.new Regexp, NilClass
+  Label     = Algebrick::Product.new name: String, color: String, condition: Condition
+  Label.add_all_field_method_accessors
 
   attr_reader :github, :owner, :repo, :pr_label, :ack_labels, :labels
 
@@ -41,25 +43,31 @@ class PRLabels
   private
 
   def check_labels(pull_request)
+    puts "processing ##{pull_request.number}"
     pr_comments    = github.pull_requests.comments.list(owner, repo, request_id: pull_request.number)
     issue_comments = github.issues.comments.list(owner, repo, issue_id: pull_request.number)
+    comments       = [pr_comments, issue_comments]
 
     should_have_labels = [pr_label.name] + ack_labels.map do |label|
-      test = -> comment { comment.body =~ label.regexp }
-      label.name if pr_comments.any?(&test) || issue_comments.any?(&test)
+      matched = comments.any? do |comments|
+        comments.to_enum(:each_page).any? do |page|
+          page.any? { |comment| comment.body =~ label.condition }
+        end
+      end
+      label.name if matched
     end.compact
 
     current_labels = pull_request.labels.map &:name
     difference     = (current_labels | should_have_labels) - (current_labels & should_have_labels)
 
     unless difference.empty?
-      puts "replacing #{current_labels * ','} with #{should_have_labels * ','} in #{pull_request.number}"
+      puts "replacing #{current_labels * ','} with #{should_have_labels * ','}"
       github.issues.labels.replace owner, repo, pull_request.number.to_s, *should_have_labels
     end
   end
 
   def issues(&block)
-    github.issues.list user: owner, repo: repo, &block
+    github.issues.list(user: owner, repo: repo).each_page { |page| page.each &block }
   end
 
   def pull_requests(&block)
@@ -67,12 +75,13 @@ class PRLabels
   end
 end
 
+label     = PRLabels::Label
 pr_labels = PRLabels.new 'Katello',
                          'katello',
                          ENV['GITHUB_TOKEN'],
-                         PRLabels::Label.new('PR', '207de5', nil),
-                         [PRLabels::Label.new('✓', '009800', /:shipit:|ACK/),
-                          PRLabels::Label.new('✘', 'e11d21', /:x:|NACK/)
+                         label['PR', '207de5', nil],
+                         [label['✓', '009800', /:shipit:|ACK/],
+                          label['✘', 'e11d21', /:x:|NACK/]
                          ]
 pr_labels.check_labels_exists
 
@@ -80,8 +89,9 @@ loop do
   begin
     puts '-- loop'
     pr_labels.run
-    sleep 60*10
     puts '-- done'
+    $stdout.flush
+    sleep 60*10
   rescue => e
     puts "(#{e.class}) #{e.message}\n#{e.backtrace.join("\n")}"
   end

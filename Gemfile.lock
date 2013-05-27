@@ -2,6 +2,7 @@ GEM
   remote: http://rubygems.org/
   specs:
     addressable (2.3.4)
+    algebrick (0.1.2)
     coderay (1.0.9)
     excon (0.22.1)
     faraday (0.8.7)
@@ -56,6 +57,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  algebrick (~> 0.1.2)
   github_api
   heroku
   json (~> 1.7.7)
